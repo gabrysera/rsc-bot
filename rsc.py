@@ -37,15 +37,23 @@ def get_credentials():
     return student_number, password
 
 def navigate():
-    student_number, password = get_credentials()
     browser.get("https://www.ru.nl/rsc/")
     time.sleep(1)
     browser.find_element(By.XPATH,'/html/body/div[2]/header/div[2]/div[3]/div/div[3]/div[2]/div/div/div/nav/div/ul/li/span/a').click()
-    time.sleep(1)
-    browser.find_element(By.CSS_SELECTOR,'#inputNummer').send_keys(student_number)
-    browser.find_element(By.CSS_SELECTOR,'#inputPassword').send_keys(password)
-    time.sleep(1)
-    browser.find_element(By.XPATH, '/html/body/div[3]/article/div[2]/div[2]/form/div[3]/div/button').click()
+    authenticated = False
+    while not authenticated:
+        student_number, password = get_credentials()
+        browser.find_element(By.CSS_SELECTOR,'#inputNummer').send_keys(student_number)
+        browser.find_element(By.CSS_SELECTOR,'#inputPassword').send_keys(password)
+        time.sleep(1)
+        browser_url = browser.current_url
+        browser.find_element(By.XPATH, '/html/body/div[3]/article/div[2]/div[2]/form/div[3]/div/button').click()
+        time.sleep(1)
+        if browser_url == browser.current_url:
+            print("wrong credentials, try again")
+        else:
+            authenticated = True
+            print("logged in.")
     time.sleep(1)
 
 def update(browser):
@@ -154,7 +162,6 @@ request = "T"
 # request = input("Enter C or T: ")
 
 if request == "T":
-    
     subscribe_ticket_hour(browser)
     print("subscribed") 
 else:
