@@ -11,6 +11,11 @@ from getpass import getpass
 from bs4 import BeautifulSoup
 import urllib.parse
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from os import environ
+import subprocess
+import json
+
+KEY_ID="9852BA295EEEE573F78741544922766356FA955B"
 
 def set_chrome_options():
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
@@ -31,10 +36,14 @@ def set_chrome_options():
     return driver
 
 def get_credentials():
-    print("enter your student number(sXXXXXXX) or username associated with your RSC subscription: ")
-    student_number = input()
-    print("enter your RSC subscription password: ")
-    password = getpass()
+    pwd = getpass()
+    subprocess.run(['gpg', '--passphrase', pwd, '--output', 'secrets.json', '--decrypt', 'secrets.json.gpg'], capture_output=False, text=False)
+    with open('secrets.json') as f:
+        parameters = json.load(f)
+    
+    student_number = parameters['rsc_user']
+    password = parameters['rsc_pwd']
+    subprocess.run(['rm', 'secrets.json'])
     return student_number, password
 
 def navigate():
