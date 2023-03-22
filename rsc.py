@@ -10,24 +10,25 @@ from selenium.webdriver.common.by import By
 from getpass import getpass
 from bs4 import BeautifulSoup
 import urllib.parse
-
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 def set_chrome_options():
     user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-    chrome_options = Options()
+    chrome_options = FirefoxOptions()
     chrome_options.add_argument(f'user-agent={user_agent}')
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--proxy-server='direct://'")
     chrome_options.add_argument("--proxy-bypass-list=*")
     chrome_options.add_argument("--start-maximized")
-    #chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--ignore-certificate-errors')
-    browser = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
-    return browser
+    driver = webdriver.Firefox(options=chrome_options)
+    #browser = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
+    return driver
 
 def get_credentials():
     print("enter your student number(sXXXXXXX) or username associated with your RSC subscription: ")
@@ -71,7 +72,11 @@ def update(browser):
     pass
 
 def try_to_subscribe(browser, ticket_hour, timer):
-    browser.find_element(By.XPATH, f'/html/body/div[3]/article/table/tbody/tr[{ticket_hour}]').click()
+    browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    browser.find_element(By.XPATH, f'/html/body/div[3]/article/table/tbody/tr[{ticket_hour}]/td[3]/a').click()
+
+
+
     time.sleep(1)
     full = True
     while full:
@@ -140,7 +145,7 @@ def subscribe_ticket_hour(browser):
         if ticket_hour in range(1,len(tickets)+1):
             yes_no = input(f"So you want to subscribe to {tickets[ticket_hour-1]}?(y,n): ")
             if yes_no == "y" or yes_no =="Y":
-                try_to_subscribe(browser, ticket_hour, 10)
+                try_to_subscribe(browser, ticket_hour, 0.05)
             else:
                 ticket_hour = None
         else:
